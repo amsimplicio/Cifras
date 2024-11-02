@@ -1,0 +1,51 @@
+<!-- templates/index.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cipher Tool</title>
+    <script>
+        async function processText(action) {
+            const cipher = document.getElementById("cipher").value;
+            const text = document.getElementById("inputText").value;
+
+            const response = await fetch("/process", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams({ cipher, text, action })
+            });
+
+            const data = await response.json();
+            if (data.error) {
+                alert(data.error);
+            } else {
+                document.getElementById("result").innerText = data.result;
+                document.getElementById("example").innerText = `Example: ${data.example}`;
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Códigos e Cifras</h1>
+    
+    <label for="cipher">Escolhe um código:</label>
+    <select id="cipher" onchange="processText('encode')">
+        {% for name, data in cipher_data.items() %}
+            <option value="{{ name }}">{{ name }}</option>
+        {% endfor %}
+    </select>
+    
+    <<p id="example">Exemplo: {{ first_example }}</p>
+
+    <label for="inputText">Texto:</label>
+    <input type="text" id="inputText">
+
+    <button onclick="processText('encode')">Encriptar</button>
+    <button onclick="processText('decode')">Descodificar</button>
+
+    <h3>Resultado:</h3>
+    <p id="result"></p>
+</body>
+</html>
