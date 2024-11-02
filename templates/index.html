@@ -1,48 +1,99 @@
 <!-- templates/index.html -->
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cipher Tool</title>
+    <title>Códigos e Cifras</title>
     <script>
+        // Function to show/hide parameter input based on selected cipher
+        function updateExampleAndParameter() {
+            const cipher = document.getElementById("cipher").value;
+            const parameterDiv = document.getElementById("parameterDiv");
+            const parameterLabel = document.getElementById("parameterLabel");
+            const parameterInput = document.getElementById("parameterInput");
+            const cipherData = {{ cipher_data | tojson }};
+
+            if (cipherData[cipher].requires_parameter) {
+                parameterDiv.style.display = "block";
+                parameterLabel.innerText = cipherData[cipher].parameter_name || "Shift:"; // Default label
+                parameterInput.value = cipherData[cipher].default_parameter; 
+            } else {
+                parameterDiv.style.display = "none";
+                parameterInput.value = "";
+            }
+
+            // Fetch example and explanation dynamically
+            fetch("/process", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams({ cipher, action: "example" })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.error) {
+                    document.getElementById("example").innerText = `Exemplo: ${data.example}`;
+                    document.getElementById("explanation").innerText = `Explicação: ${cipherData[cipher].explanation}`; // Update explanation
+                }
+            });
+            if (inputText) {
+                processText('encode'); // Encode automatically when new cipher is selected
+            }
+            }
+
+    
+        // Function to handle encode/decode actions with optional parameter
         async function processText(action) {
             const cipher = document.getElementById("cipher").value;
             const text = document.getElementById("inputText").value;
-
+            const parameter = document.getElementById("parameterInput").value;
+    
+            const formData = new URLSearchParams({ cipher, text, action });
+            if (parameter) {
+                formData.append("parameter", parameter);
+            }
+    
             const response = await fetch("/process", {
                 method: "POST",
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: new URLSearchParams({ cipher, text, action })
+                body: formData
             });
-
+    
             const data = await response.json();
             if (data.error) {
                 alert(data.error);
             } else {
                 document.getElementById("result").innerText = data.result;
-                document.getElementById("example").innerText = `Example: ${data.example}`;
             }
         }
+
+        // Call updateExampleAndParameter when the page loads
+
+        window.onload = updateExampleAndParameter;
     </script>
 </head>
 <body>
     <h1>Códigos e Cifras</h1>
     
     <label for="cipher">Escolhe um código:</label>
-    <select id="cipher" onchange="processText('encode')">
+    <select id="cipher" onchange="updateExampleAndParameter()">
         {% for name, data in cipher_data.items() %}
-            <option value="{{ name }}">{{ name }}</option>
+            <option value="{{ name }}">{{ name }} </option>
         {% endfor %}
     </select>
-    
-    <<p id="example">Exemplo: {{ first_example }}</p>
+    <div id="parameterDiv" style="display: none;">
+        <label id="parameterLabel" for="parameterInput"></label>
+        <input type="text" id="parameterInput">
+    </div>
+    <p id="explanation">Explicação: {{ first_explanation}} </p>
+    <p id="example">Exemplo: {{ first_example }}</p>
 
-    <label for="inputText">Texto:</label>
-    <input type="text" id="inputText">
+    <label  for="inputText">Texto:</label>
+    <input type="text" id="inputText" onkeydown="if (event.keyCode == 13)
+                        document.getElementById('encode_btn').click()">
 
-    <button onclick="processText('encode')">Encriptar</button>
+    <button id="encode_btn" onclick="processText('encode')">Encriptar</button>
     <button onclick="processText('decode')">Descodificar</button>
 
     <h3>Resultado:</h3>
