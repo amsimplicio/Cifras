@@ -17,7 +17,7 @@
 
             if (cipherData[cipher].requires_parameter) {
                 parameterDiv.style.display = "block";
-                parameterLabel.innerText = cipherData[cipher].parameter_name || "Shift:"; // Default label
+                parameterLabel.innerText = cipherData[cipher].parameter_name || "Chave:"; // Default label
                 parameterInput.value = cipherData[cipher].default_parameter; 
             } else {
                 parameterDiv.style.display = "none";
