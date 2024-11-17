@@ -90,9 +90,12 @@
     <p id="example">Exemplo: {{ first_example }}</p>
 
     <label  for="inputText">Texto:</label>
-    <input type="text" id="inputText" onkeydown="if (event.keyCode == 13)
+    <form>
+    <textarea   type="text" id="inputText" rows="5" cols="33" 
+    onkeydown="if (event.keyCode == 13)
                         document.getElementById('encode_btn').click()">
-
+    </textarea>
+    </form>
     <button id="encode_btn" onclick="processText('encode')">Encriptar</button>
     <button onclick="processText('decode')">Descodificar</button>
 
